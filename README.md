@@ -3,7 +3,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PWA Ready](https://img.shields.io/badge/PWA-Ready-00f090.svg)](https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps)
 [![Version](https://img.shields.io/badge/Core%20Engine-v2.4-00d2ff.svg)]()
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-brightgreen?logo=github)](https://laxmi19-creator.github.io/ResQAI/)
 [![Platform](https://img.shields.io/badge/Platform-Web%20%7C%20Android%20%7C%20iOS-blueviolet.svg)]()
+
+
+> 🚀 **Live Demo URL**: [https://laxmi19-creator.github.io/ResQAI/](https://laxmi19-creator.github.io/ResQAI/)
 
 > **ResQAI** is a life-saving, client-side emergency response platform that transforms any smartphone into an intelligent crash and fall detector. Leveraging real-time sensor telemetry, kinematic AI models, and automated dispatch workflows, ResQAI helps bridge the critical **"Golden Hour"** to save accident victims.
 
