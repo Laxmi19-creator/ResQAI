@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ResQAI — AI-Powered Accident Detection & Emergency Response System</title>
+  <meta name="description" content="Intelligent smartphone sensor accident detection, real-time false-alarm filtering, 15-second emergency countdown, 5-family contact live GPS dispatch, and nearby hospital & police locator." />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700;800&family=Orbitron:wght@600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  
+  <!-- Progressive Web App (PWA) Manifest & Mobile Meta -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#070b14" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ResQAI" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" type="image/png" href="icons/icon-192.png" />
+
+  <!-- App Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Top App Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-wrapper">
+        <div class="brand-icon-pulse" id="brandIcon">
+          🚨
+        </div>
+        <div>
+          <h1 class="brand-title">ResQ<span style="color: var(--red-alert);">AI</span> <span class="badge-ai">SENSOR CORE v2.4</span></h1>
+          <p class="brand-subtitle">AI Accident Detection & Emergency Response Platform</p>
+        </div>
+      </div>
+
+      <div class="header-status-badge" id="topStatusBadge">
+        <span class="status-dot"></span>
+        <span id="topStatusText">AI GUARDIAN: ACTIVE</span>
+      </div>
+
+      <div class="header-actions">
+        <button id="btnInstallPwa" class="btn-hud btn-emerald" style="font-weight: 700;" title="Install ResQAI as an app directly on your smartphone">
+          <span class="btn-icon">📲</span> <span class="btn-text">Install</span>
+        </button>
+        <button id="btnEnableSensors" class="btn-hud btn-cyan" title="Activate Device Motion & Gyroscope Sensors">
+          <span class="btn-icon">📡</span> <span class="btn-text">Sensors</span>
+        </button>
+        <button id="btnManualSos" class="btn-hud btn-danger" title="Trigger Instant SOS Alert">
+          <span class="btn-icon">🆘</span> <span class="btn-text">SOS</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Application Body -->
+  <main class="app-main">
+
+    <!-- AI Guardian Live Status Bar -->
+    <section class="glass-panel ai-guardian-banner" id="guardianBanner">
+      <div class="guardian-info">
+        <div class="guardian-icon-ring" id="guardianIconRing">
+          🛡️
+        </div>
+        <div class="guardian-text">
+          <h3 id="guardianStatusTitle">Active Guardian: Monitoring Live Kinematics</h3>
+          <p id="guardianStatusMsg">Analyzing continuous accelerometer G-force, gyro rotation and vehicle speed vectors.</p>
+        </div>
+      </div>
+
+      <div class="guardian-meta-chips">
+        <div class="meta-chip" id="chipSensitivity">
+          Sensitivity: <strong id="valSensitivity">MEDIUM</strong>
+        </div>
+        <div class="meta-chip" id="chipGps">
+          GPS: <strong id="valGpsStatus">LOCKED (±12m)</strong>
+        </div>
+        <div class="meta-chip" id="chipBattery">
+          Battery: <strong id="valBattery">85%</strong>
+        </div>
+        <div class="meta-chip" id="chipContactsCount">
+          SOS Contacts: <strong>5 Active</strong>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2-Column Dashboard Grid -->
+    <div class="dashboard-grid">
+
+      <!-- LEFT COLUMN: SENSOR TELEMETRY & SIMULATION BENCH -->
+      <div class="telemetry-section app-view-tab active" id="tabContentMonitor" data-tab="monitor">
+        
+        <!-- Live Gauges Row -->
+        <div class="metric-cards-row">
+          <div class="metric-card" id="cardTotalG">
+            <span class="metric-label">Impact G-Force</span>
+            <div class="metric-value-wrap">
+              <span class="metric-value" id="valTotalG">1.00</span>
+              <span class="metric-unit">G</span>
+            </div>
+            <div class="metric-bar-bg">
+              <div class="metric-bar-fill" id="barTotalG" style="width: 15%;"></div>
+            </div>
+          </div>
+
+          <div class="metric-card" id="cardPeakG">
+            <span class="metric-label">Max Peak G</span>
+            <div class="metric-value-wrap">
+              <span class="metric-value" id="valPeakG">1.02</span>
+              <span class="metric-unit">G</span>
+            </div>
+            <div class="metric-bar-bg">
+              <div class="metric-bar-fill" id="barPeakG" style="width: 15%; background: var(--amber-warn);"></div>
+            </div>
+          </div>
+
+          <div class="metric-card" id="cardJerk">
+            <span class="metric-label">Jerk Rate (da/dt)</span>
+            <div class="metric-value-wrap">
+              <span class="metric-value" id="valJerk">0.2</span>
+              <span class="metric-unit">m/s³</span>
+            </div>
+            <div class="metric-bar-bg">
+              <div class="metric-bar-fill" id="barJerk" style="width: 5%;"></div>
+            </div>
+          </div>
+
+          <div class="metric-card" id="cardAngular">
+            <span class="metric-label">Angular Velocity</span>
+            <div class="metric-value-wrap">
+              <span class="metric-value" id="valAngular">1.4</span>
+              <span class="metric-unit">°/s</span>
+            </div>
+            <div class="metric-bar-bg">
+              <div class="metric-bar-fill" id="barAngular" style="width: 8%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Real-Time Waveform Oscillogram -->
+        <div class="glass-panel oscillogram-container">
+          <div class="chart-header">
+            <div class="section-title">
+              📈 Live 3-Axis Sensor Waveform
+              <span class="title-pill" id="liveSourcePill">STREAMING</span>
+            </div>
+            <div class="chart-legend">
+              <div class="legend-item"><span class="legend-dot" style="background: #00d2ff;"></span> Accel (Total G)</div>
+              <div class="legend-item"><span class="legend-dot" style="background: #ff2e51;"></span> X/Y/Z Vectors</div>
+              <div class="legend-item"><span class="legend-dot" style="background: #ffb020;"></span> Jerk Shock</div>
+            </div>
+          </div>
+
+          <div class="canvas-wrapper">
+            <canvas id="telemetryCanvas"></canvas>
+          </div>
+        </div>
+
+        <!-- 3D Phone Motion Visualizer & Scenario Simulation Bench -->
+        <div class="motion-sim-row">
+          
+          <!-- 3D Phone Tilt HUD -->
+          <div class="glass-panel phone-orientation-card">
+            <div class="section-title" style="margin-bottom: 0; font-size: 0.9rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; width: 100%;">
+              <span>📱 Gyro Spatial Orientation</span>
+              <span id="gyroStatusPill" style="font-size: 0.68rem; color: var(--emerald-safe); font-weight: normal; background: rgba(0, 240, 144, 0.1); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(0, 240, 144, 0.3);">🟢 Gyro Active</span>
+            </div>
+            <div class="phone-3d-viewport" id="phoneViewportWrap">
+              <div class="phone-3d-model" id="phone3dModel">
+                <div class="phone-notch"></div>
+                <div class="phone-screen-glow">
+                  <div>ResQ AI</div>
+                  <div style="font-size: 11px; margin-top: 4px;" id="phoneSpeedText">0 km/h</div>
+                </div>
+                <div class="phone-home-bar"></div>
+              </div>
+            </div>
+            <div class="angles-badge-row">
+              <span>Roll (γ): <strong id="valRoll">0°</strong></span>
+              <span>Pitch (β): <strong id="valPitch">0°</strong></span>
+              <span>Yaw (α): <strong id="valYaw">0°</strong></span>
+            </div>
+            <div style="display: flex; gap: 8px; width: 100%; margin-top: 6px;">
+              <button id="btnCalibrateGyro" class="btn-hud" style="flex: 1; font-size: 0.72rem; justify-content: center; padding: 5px 8px;" title="Set current holding angle as level 0°">
+                🎯 Calibrate Level
+              </button>
+              <button id="btnRequestGyroPerm" class="btn-hud btn-cyan" style="flex: 1; font-size: 0.72rem; justify-content: center; padding: 5px 8px;" title="Sync smartphone gyroscope sensors">
+                📡 Re-Sync Gyro
+              </button>
+            </div>
+          </div>
+
+          <!-- Scenario Simulation Bench -->
+          <div class="glass-panel simulation-bench-card">
+            <div class="section-header" style="margin-bottom: 8px;">
+              <div class="section-title" style="font-size: 0.9rem;">
+                🧪 AI Scenario Test Bench
+              </div>
+              <button id="btnStopSim" class="btn-hud" style="padding: 4px 8px; font-size: 0.72rem; display: none;">
+                ⏹ Stop
+              </button>
+            </div>
+            
+            <p style="font-size: 0.74rem; color: var(--text-muted); margin-bottom: 4px;">
+              Test the AI detection engine and false-positive filter with realistic crash & fall telemetry:
+            </p>
+
+            <div class="sim-buttons-grid">
+              <button class="btn-scenario scenario-crash" data-scenario="high_fall">
+                <span>🤸‍♂️ Severe Fall from Height (Roof / Stairs)</span>
+                <span class="scenario-tag tag-crash">TRIGGER SOS</span>
+              </button>
+
+              <button class="btn-scenario scenario-crash" data-scenario="car_crash">
+                <span>💥 Severe Car Crash (55 km/h)</span>
+                <span class="scenario-tag tag-crash">TRIGGER SOS</span>
+              </button>
+
+              <button class="btn-scenario scenario-crash" data-scenario="motorcycle_skid">
+                <span>🏍️ Motorcycle High-Side Skid</span>
+                <span class="scenario-tag tag-crash">TRIGGER SOS</span>
+              </button>
+
+              <button class="btn-scenario scenario-filter" data-scenario="phone_drop">
+                <span>📱 Phone Dropped on Floor</span>
+                <span class="scenario-tag tag-filter">AI FILTERS OUT</span>
+              </button>
+
+              <button class="btn-scenario scenario-filter" data-scenario="pothole_bump">
+                <span>🕳️ Deep Pothole / Speed Bump</span>
+                <span class="scenario-tag tag-filter">AI FILTERS OUT</span>
+              </button>
+
+              <button class="btn-scenario scenario-filter" data-scenario="hard_brake">
+                <span>🛑 Sudden Hard Braking</span>
+                <span class="scenario-tag tag-filter">AI FILTERS OUT</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: INTERACTIVE MAP & NEARBY EMERGENCY SERVICES -->
+      <div class="services-section app-view-tab" id="tabContentRadar" data-tab="radar">
+        
+        <!-- Live Emergency Map -->
+        <div class="glass-panel map-card">
+          <div class="section-header" style="margin-bottom: 4px;">
+            <div class="section-title">
+              🗺️ Live Emergency Radar
+              <span class="title-pill">GPS ACTIVE</span>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button id="btnRecenterMap" class="btn-hud" style="padding: 4px 10px; font-size: 0.75rem;">
+                🎯 Center Me
+              </button>
+              <button id="btnFitMap" class="btn-hud" style="padding: 4px 10px; font-size: 0.75rem;">
+                📐 Fit All
+              </button>
+            </div>
+          </div>
+
+          <div class="map-viewport">
+            <div id="leafletMap"></div>
+          </div>
+
+          <!-- Location Search & Auto-Detection Bar -->
+          <div class="location-search-bar" style="display: flex; gap: 6px; margin-top: 4px;">
+            <input type="text" id="inputLocationSearch" class="form-input" style="padding: 7px 10px; font-size: 0.78rem;" placeholder="🔍 Enter City, Area or Pincode (e.g. Mumbai, Noida, Bengaluru)..." />
+            <button id="btnSearchLocation" class="btn-hud btn-cyan" style="padding: 7px 12px; font-size: 0.75rem; white-space: nowrap;">
+              Search
+            </button>
+            <button id="btnAutoDetectLocation" class="btn-hud btn-emerald" style="padding: 7px 12px; font-size: 0.75rem; white-space: nowrap;" title="Detect live location via GPS & Network IP">
+              📍 My Location
+            </button>
+          </div>
+
+          <div style="font-size: 0.74rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 4px;">
+            <span>📍 Active Location: <strong id="mapLocationAddr" style="color: #fff;">Kanpur, Uttar Pradesh, India</strong></span>
+            <a id="btnGoogleMapsNearby" href="https://www.google.com/maps/search/hospitals+emergency+near+Kanpur+Uttar+Pradesh/" target="_blank" style="color: var(--cyan-telemetry); text-decoration: none; font-size: 0.74rem; display: inline-flex; align-items: center; gap: 3px;">
+              🌐 Search on Google Maps ↗
+            </a>
+          </div>
+        </div>
+
+        <!-- Quick 1-Tap Emergency Dial Bar -->
+        <div class="quick-dial-bar" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+          <a href="tel:112" class="btn-hud btn-danger" style="justify-content: center; padding: 10px; font-size: 0.85rem;">
+            🚨 Call 112 (SOS)
+          </a>
+          <a href="tel:108" class="btn-hud btn-emerald" style="justify-content: center; padding: 10px; font-size: 0.85rem;">
+            🚑 Call 108 (Ambulance)
+          </a>
+          <a href="tel:100" class="btn-hud btn-cyan" style="justify-content: center; padding: 10px; font-size: 0.85rem;">
+            🚓 Call 100 (Police)
+          </a>
+        </div>
+
+        <!-- Nearby Hospitals & Police Stations Explorer -->
+        <div class="glass-panel map-card" style="padding: 16px;">
+          <div class="section-header" style="margin-bottom: 8px;">
+            <div class="section-title" style="font-size: 0.95rem;">
+              🏥 Nearby Emergency Facilities
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 0.72rem; color: var(--text-muted);" id="nearestHospitalBadge">Closest: Loading...</span>
+              <button id="btnRefreshRealPlaces" class="btn-hud" style="padding: 3px 8px; font-size: 0.7rem;" title="Query live OpenStreetMap database for real nearby hospitals">
+                🔄 Scan Live
+              </button>
+            </div>
+          </div>
+
+          <div class="service-cards-list" id="servicesList">
+            <!-- Dynamically injected via main.js -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- BOTTOM ROW: 5 FAMILY CONTACTS & MEDICAL ID VAULT -->
+    <div class="bottom-management-grid">
+
+      <!-- 5 Emergency Contacts Manager -->
+      <div class="glass-panel contacts-card app-view-tab" id="tabContentContacts" data-tab="contacts">
+        <div class="section-header">
+          <div>
+            <div class="section-title">
+              👨‍👩‍👧‍👦 Family Emergency Circle (Up to 5 Contacts)
+            </div>
+            <p style="font-size: 0.74rem; color: var(--text-muted);">
+              Instant live GPS telemetry & medical summary broadcasted upon confirmed crash.
+            </p>
+          </div>
+          <button id="btnAddContact" class="btn-hud btn-cyan">
+            ➕ Add Contact
+          </button>
+        </div>
+
+        <div class="contacts-list" id="contactsList">
+          <!-- Populated by contactManager.js -->
+        </div>
+      </div>
+
+      <!-- Medical ID & First-Responder Vault -->
+      <div class="glass-panel medical-card app-view-tab" id="tabContentMedical" data-tab="medical">
+        <div class="section-header">
+          <div>
+            <div class="section-title">
+              🩺 Medical ID & First-Responder Vault
+            </div>
+            <p style="font-size: 0.74rem; color: var(--text-muted);">
+              Critical health details accessible by emergency responders.
+            </p>
+          </div>
+          <button id="btnEditMedical" class="btn-hud">
+            ✏️ Edit Profile
+          </button>
+        </div>
+
+        <div class="medical-summary-grid" id="medicalSummaryGrid">
+          <div class="med-cell">
+            <span class="cell-title">Full Name</span>
+            <span class="cell-val" id="medFullName">Ujjwal Tiwari</span>
+          </div>
+          <div class="med-cell">
+            <span class="cell-title">Blood Group</span>
+            <span class="cell-val blood-val" id="medBloodGroup">B+</span>
+          </div>
+          <div class="med-cell">
+            <span class="cell-title">Known Allergies</span>
+            <span class="cell-val" id="medAllergies">Penicillin, Dust</span>
+          </div>
+          <div class="med-cell">
+            <span class="cell-title">Organ Donor</span>
+            <span class="cell-val" id="medOrganDonor" style="color: var(--emerald-safe);">YES (Registered)</span>
+          </div>
+          <div class="med-cell" style="grid-column: span 2;">
+            <span class="cell-title">Insurance Policy</span>
+            <span class="cell-val" id="medInsurance">Star Health — #SH-884920419</span>
+          </div>
+        </div>
+
+        <button id="btnViewMedicalCard" class="btn-hud" style="width: 100%; justify-content: center; background: rgba(255,255,255,0.06);">
+          📋 Open First-Responder Emergency Card
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ==========================================================================
+       FULLSCREEN EMERGENCY MODAL (ACTIVE ACCIDENT COUNTDOWN)
+       ========================================================================== -->
+  <div class="emergency-modal-overlay" id="emergencyModal">
+    <div class="emergency-modal-content">
+      
+      <div class="emergency-badge-header">
+        ⚠️ HIGH SEVERITY ACCIDENT DETECTED
+      </div>
+
+      <div>
+        <h2 class="emergency-title">ARE YOU SAFE?</h2>
+        <p class="emergency-desc">
+          AI detected a severe kinetic event (<span id="emgConfidence">95%</span> confidence). 
+          Emergency broadcast with your live GPS location will send automatically to your primary contact when the timer reaches zero.
+        </p>
+      </div>
+
+      <!-- Auto-Dispatch Target Box -->
+      <div style="background: rgba(255, 46, 81, 0.12); border: 1px solid rgba(255, 46, 81, 0.4); border-radius: 8px; padding: 10px; margin-bottom: 4px; width: 100%; text-align: left; font-size: 0.76rem;">
+        <div style="color: #fff; font-weight: 700; margin-bottom: 3px; display: flex; align-items: center; gap: 6px;">
+          <span>📡 Auto-Dispatching Live GPS Location To:</span>
+        </div>
+        <div style="color: var(--cyan-telemetry); font-weight: 600;" id="emgPrimaryContactText">
+          👤 Anita Sharma (Mother) • +919876543210
+        </div>
+        <div style="color: var(--text-dim); font-size: 0.7rem; margin-top: 2px;" id="emgLiveLocText">
+          📍 Live Location: Kalyanpur, Kanpur (26.5005°N, 80.2565°E)
+        </div>
+      </div>
+
+      <!-- Circular SVG Countdown Clock -->
+      <div class="countdown-clock-wrapper">
+        <svg class="countdown-svg" viewBox="0 0 160 160">
+          <circle class="countdown-circle-bg" cx="80" cy="80" r="70" />
+          <circle class="countdown-circle-progress" id="countdownCircle" cx="80" cy="80" r="70" />
+        </svg>
+        <div class="countdown-number-box">
+          <span class="countdown-sec" id="countdownSecText">15</span>
+          <span class="countdown-label">SECONDS</span>
+        </div>
+      </div>
+
+      <div style="font-size: 0.78rem; color: #94a3b8; display: flex; align-items: center; gap: 6px;">
+        <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#ff2e51; animation: pulseRed 1s infinite;"></span>
+        Voice Safety Listener: Say <strong>"CANCEL"</strong> or <strong>"SAFE"</strong>
+      </div>
+
+      <!-- Big Safe Button -->
+      <button class="btn-emergency-safe" id="btnCancelEmergency">
+        🛡️ I AM SAFE — CANCEL ALERT
+      </button>
+
+      <!-- Secondary emergency options -->
+      <div class="emergency-secondary-actions">
+        <button class="btn-instant-sos" id="btnInstantBroadcast">
+          ⚡ Dispatch to Primary Contact Now
+        </button>
+        <button class="btn-mute-siren" id="btnToggleSiren">
+          🔊 Siren ON
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       POST-DISPATCH SOS SUMMARY MODAL
+       ========================================================================== -->
+  <div class="standard-modal-overlay" id="sosSummaryModal">
+    <div class="standard-modal-card" style="max-width: 540px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <h3 style="color: var(--red-alert); font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+          🚨 SOS Broadcast Dispatched
+        </h3>
+        <button class="btn-hud" id="btnCloseSosSummary" style="padding: 4px 8px;">✕</button>
+      </div>
+
+      <div style="background: rgba(255, 46, 81, 0.08); border: 1px solid rgba(255, 46, 81, 0.3); border-radius: 8px; padding: 12px; font-size: 0.8rem;">
+        <p style="margin: 0 0 4px 0;"><strong>Incident ID:</strong> <span id="summaryIncidentId">INC-894102</span></p>
+        <p style="margin: 0 0 6px 0;"><strong>Primary Contact:</strong> <span id="summaryPrimaryContactName" style="color: var(--cyan-telemetry); font-weight: bold;">Anita Sharma (+919876543210)</span></p>
+        <p style="margin: 0; color: #22c55e;">✓ Live GPS coordinates & medical ID transmitted.</p>
+      </div>
+
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a id="btnDirectWhatsappPrimary" href="#" target="_blank" class="btn-hud btn-emerald" style="flex: 1; justify-content: center; padding: 10px; font-weight: 700; text-decoration: none;">
+          🟢 Open WhatsApp
+        </a>
+        <a id="btnDirectSmsPrimary" href="#" class="btn-hud btn-cyan" style="flex: 1; justify-content: center; padding: 10px; font-weight: 700; text-decoration: none;">
+          💬 Open SMS
+        </a>
+        <a id="btnDirectCallPrimary" href="tel:+919876543210" class="btn-hud btn-danger" style="flex: 1; justify-content: center; padding: 10px; font-weight: 700; text-decoration: none;">
+          📞 Call Contact
+        </a>
+      </div>
+
+      <div class="form-group">
+        <label>Generated Emergency SOS Dispatch Message:</label>
+        <textarea class="form-textarea" id="sosSummaryText" rows="6" readonly></textarea>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <button class="btn-hud btn-emerald" id="btnSummaryShareWhatsapp" style="justify-content: center; padding: 10px;">
+          💬 WhatsApp All
+        </button>
+        <button class="btn-hud btn-cyan" id="btnSummaryWebShare" style="justify-content: center; padding: 10px;">
+          📤 Native Share (SMS)
+        </button>
+      </div>
+
+      <a href="tel:112" class="btn-hud btn-danger" style="justify-content: center; padding: 12px; font-weight: 800;">
+        📞 Call National Emergency (112)
+      </a>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       ADD / EDIT CONTACT MODAL
+       ========================================================================== -->
+  <div class="standard-modal-overlay" id="contactModal">
+    <div class="standard-modal-card">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <h3 id="contactModalTitle">Add Emergency Contact</h3>
+        <button class="btn-hud" id="btnCloseContactModal" style="padding: 4px 8px;">✕</button>
+      </div>
+
+      <form id="contactForm" style="display: flex; flex-direction: column; gap: 12px;">
+        <input type="hidden" id="editContactId" value="" />
+        
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="contactInputName" class="form-input" placeholder="e.g. Rajesh Sharma" required />
+        </div>
+
+        <div class="form-group">
+          <label>Phone Number (with Country Code)</label>
+          <input type="tel" id="contactInputPhone" class="form-input" placeholder="e.g. +919876543210" required />
+        </div>
+
+        <div class="form-group">
+          <label>Relationship</label>
+          <select id="contactInputRelation" class="form-select">
+            <option value="Mother">Mother</option>
+            <option value="Father">Father</option>
+            <option value="Sibling">Sibling</option>
+            <option value="Spouse">Spouse</option>
+            <option value="Doctor">Family Doctor</option>
+            <option value="Friend">Close Friend</option>
+            <option value="Guardian">Guardian</option>
+          </select>
+        </div>
+
+        <div style="display: flex; gap: 16px; margin-top: 4px;">
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer;">
+            <input type="checkbox" id="contactInputWhatsapp" checked /> WhatsApp SOS
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; cursor: pointer;">
+            <input type="checkbox" id="contactInputSms" checked /> SMS Alert
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+          <button type="button" class="btn-hud" id="btnCancelContactModal">Cancel</button>
+          <button type="submit" class="btn-hud btn-cyan">Save Contact</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       EDIT MEDICAL ID MODAL
+       ========================================================================== -->
+  <div class="standard-modal-overlay" id="medicalModal">
+    <div class="standard-modal-card">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <h3>Edit Medical Emergency ID</h3>
+        <button class="btn-hud" id="btnCloseMedicalModal" style="padding: 4px 8px;">✕</button>
+      </div>
+
+      <form id="medicalForm" style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="medInputName" class="form-input" required />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+          <div class="form-group">
+            <label>Blood Group</label>
+            <select id="medInputBlood" class="form-select">
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Age</label>
+            <input type="number" id="medInputAge" class="form-input" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Known Allergies</label>
+          <input type="text" id="medInputAllergies" class="form-input" placeholder="e.g. Penicillin, Peanuts" />
+        </div>
+
+        <div class="form-group">
+          <label>Medical Conditions / Notes</label>
+          <input type="text" id="medInputConditions" class="form-input" placeholder="e.g. Asthma, Diabetic" />
+        </div>
+
+        <div class="form-group">
+          <label>Insurance Provider & Policy #</label>
+          <input type="text" id="medInputInsurance" class="form-input" placeholder="e.g. Star Health #SH-884920419" />
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+          <button type="button" class="btn-hud" id="btnCancelMedicalModal">Cancel</button>
+          <button type="submit" class="btn-hud btn-emerald">Save Medical ID</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       INSTALL PWA ON PHONE MODAL & QR CODE
+       ========================================================================== -->
+  <div class="standard-modal-overlay" id="installModal">
+    <div class="standard-modal-card" style="max-width: 520px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <img src="icons/icon-192.png" alt="ResQAI Icon" style="width: 36px; height: 36px; border-radius: 8px; border: 1px solid rgba(0,210,255,0.3);" />
+          <div>
+            <h3 style="margin: 0; font-size: 1.05rem;">Install ResQAI on Your Phone</h3>
+            <span style="font-size: 0.72rem; color: var(--emerald-safe);">Progressive Web App (PWA) • Standalone Mode</span>
+          </div>
+        </div>
+        <button class="btn-hud" id="btnCloseInstallModal" style="padding: 4px 8px;">✕</button>
+      </div>
+
+      <!-- Quick 1-Tap Native Install (Shown when available on Android/Chrome) -->
+      <div id="pwaPromptSection" style="display: none; background: rgba(0, 240, 144, 0.08); border: 1px solid rgba(0, 240, 144, 0.25); border-radius: 8px; padding: 12px; margin-bottom: 14px; text-align: center;">
+        <p style="font-size: 0.82rem; margin-bottom: 8px; color: #fff;">
+          ⚡ <strong>Native Installation Ready!</strong> Tap below to install directly to your device home screen:
+        </p>
+        <button id="btnTriggerPwaInstall" class="btn-hud btn-emerald" style="width: 100%; justify-content: center; font-size: 0.92rem; padding: 10px;">
+          📲 Install ResQAI App Now
+        </button>
+      </div>
+
+      <!-- Option 1: Scan QR Code with Phone Camera -->
+      <div style="background: rgba(14, 23, 42, 0.7); border: 1px solid var(--border-glass); border-radius: 8px; padding: 14px; margin-bottom: 14px;">
+        <div style="font-weight: 700; font-size: 0.85rem; color: var(--cyan-telemetry); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+          <span>📷 Step 1: Scan with Phone Camera</span>
+          <span style="font-size: 0.7rem; background: rgba(0,210,255,0.15); padding: 2px 6px; border-radius: 4px;">Same Wi-Fi</span>
+        </div>
+        
+        <div style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
+          <div id="pwaQrContainer" style="background: #fff; padding: 8px; border-radius: 8px; width: 124px; height: 124px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+            <canvas id="qrCanvas" width="108" height="108"></canvas>
+          </div>
+          <div style="flex: 1; min-width: 180px;">
+            <p style="font-size: 0.78rem; color: var(--text-dim); margin-bottom: 8px; line-height: 1.4;">
+              Open your phone camera or QR scanner to open ResQAI on your smartphone immediately.
+            </p>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <input type="text" id="mobileAppUrlInput" readonly class="form-input" style="font-size: 0.72rem; padding: 6px 8px; font-family: var(--font-mono);" value="http://192.168.1.8:8080" />
+              <button id="btnCopyMobileUrl" class="btn-hud" style="padding: 6px 10px; font-size: 0.72rem; white-space: nowrap;">Copy</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Option 2: Step-by-Step Installation for iPhone & Android -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+        <!-- Android Instructions -->
+        <div style="background: rgba(2, 6, 23, 0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px;">
+          <div style="font-weight: 700; font-size: 0.8rem; color: #22c55e; margin-bottom: 4px;">
+            🤖 Android (Chrome)
+          </div>
+          <ol style="font-size: 0.72rem; color: var(--text-dim); margin: 0; padding-left: 16px; line-height: 1.4;">
+            <li>Open link in Chrome</li>
+            <li>Tap 3 dots (<strong>⋮</strong>) menu</li>
+            <li>Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong></li>
+          </ol>
+        </div>
+
+        <!-- iPhone Instructions -->
+        <div style="background: rgba(2, 6, 23, 0.6); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 10px;">
+          <div style="font-weight: 700; font-size: 0.8rem; color: #38bdf8; margin-bottom: 4px;">
+            🍏 iPhone (Safari)
+          </div>
+          <ol style="font-size: 0.72rem; color: var(--text-dim); margin: 0; padding-left: 16px; line-height: 1.4;">
+            <li>Open link in Safari</li>
+            <li>Tap <strong>Share</strong> button (<strong>⎋</strong>)</li>
+            <li>Tap <strong>"Add to Home Screen"</strong> (<strong>⊞</strong>)</li>
+          </ol>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end;">
+        <button type="button" class="btn-hud" id="btnDismissInstallModal">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Native Bottom Navigation Bar (iOS / Android Native App Layout) -->
+  <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Mobile Navigation">
+    <button type="button" class="nav-item active" data-tab="monitor" id="tabNavMonitor">
+      <span class="nav-icon">🛡️</span>
+      <span class="nav-label">Monitor</span>
+      <span class="nav-indicator"></span>
+    </button>
+    <button type="button" class="nav-item" data-tab="radar" id="tabNavRadar">
+      <span class="nav-icon">🏥</span>
+      <span class="nav-label">Radar & SOS</span>
+      <span class="nav-indicator"></span>
+    </button>
+    <button type="button" class="nav-item" data-tab="contacts" id="tabNavContacts">
+      <span class="nav-icon">👨‍👩‍👧</span>
+      <span class="nav-label">Contacts</span>
+      <span class="nav-indicator"></span>
+    </button>
+    <button type="button" class="nav-item" data-tab="medical" id="tabNavMedical">
+      <span class="nav-icon">🩺</span>
+      <span class="nav-label">Medical ID</span>
+      <span class="nav-indicator"></span>
+    </button>
+  </nav>
+
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- Main Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>

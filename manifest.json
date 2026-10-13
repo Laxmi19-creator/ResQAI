@@ -1,0 +1,42 @@
+{
+  "name": "ResQAI — AI Accident Detection & Emergency Response",
+  "short_name": "ResQAI",
+  "description": "AI-Powered Real-time Smartphone Accident Detection, Kinematic Telemetry & Emergency Broadcast System",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#050811",
+  "theme_color": "#070b14",
+  "categories": ["medical", "health", "utilities", "safety"],
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Trigger Manual SOS",
+      "short_name": "SOS",
+      "description": "Immediately trigger emergency alarm and broadcast",
+      "url": "./index.html?action=sos",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Nearby Hospitals",
+      "short_name": "Hospitals",
+      "description": "Find closest verified emergency trauma hospitals",
+      "url": "./index.html?action=hospitals",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "resq-ai",
+  "version": "1.0.0",
+  "description": "ResQAI - AI-Powered Accident Detection and Emergency Response System",
+  "main": "app.js",
+  "scripts": {
+    "start": "python -m http.server 8000"
+  },
+  "keywords": [],
+  "author": "Laxmi Gupta",
+  "license": "MIT",
+  "homepage": "https://Laxmi19-creator.github.io/ResQAI"
+}
